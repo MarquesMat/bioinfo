@@ -1,13 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define k 10
-#define g (-2)
-/*
-char align_s[k]
-char align_t[k]
-*/
-int tam_seq(char *seq) {
+#define k 10   // Tamanho máximo das sequências
+#define g (-2) // Penalidade por espaço vazio (gap)
+char align_s[k * 2];
+char align_t[k * 2];
+
+struct auxiliar {
+  int m, n;
+  int **a;
+  char s[k], t[k];
+};
+
+int tam_seq(char *seq) { // Retorna o tamanho da sequência
   char c = seq[0];
   int i = 0;
   while (seq[i])
@@ -15,13 +21,13 @@ int tam_seq(char *seq) {
   return i;
 }
 
-int par(char a, char b) {
+int par(char a, char b) { // Verifica se duas bases são iguais
   if (a == b)
-    return 1;
-  return (-1);
+    return 1;  // Acerto (match)
+  return (-1); // Erro (mismatch)
 }
 
-int max(int x, int y, int z) {
+int max(int x, int y, int z) { // Retorna o maior valor
   int maior = x;
   if (maior < y)
     maior = y;
@@ -37,7 +43,7 @@ void print_seq(char *t, int n) {
   printf("\n");
 }
 
-void print_matrix(char *s, char *t, int m, int n, int a[m][n]) {
+void print_matrix(char *s, char *t, int m, int n, int **a) {
   print_seq(t, n);
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
@@ -52,28 +58,13 @@ void print_matrix(char *s, char *t, int m, int n, int a[m][n]) {
   }
 }
 
-int min(int x, int y, int z) {
-  int min = x;
-  if (y < min)
-    y = min;
-  if (z < min)
-    z = min;
-  return min;
-}
-
-char *alinhar(char *s, char *t, int m, int n, int a[m][n]) {
-  char alin_s[m], alin_t[n];
-  int min;
-  for (int i = (m - 1); i > 0; i--) {
-    for (int j = (n - 1); j > 0; j--) {
-      
-    }
-  }
-}
-
-void similaridade(char *s, char *t, int m, int n) {
+int **similaridade(char *s, char *t, int m, int n) { // Gera a matriz de similaridade
   int p;
-  int a[m][n];
+  // Alocar memória para a matriz de similaridade
+  int **a = (int **)malloc(m * sizeof(int *));
+  for (int i = 0; i < m; i++)
+    a[i] = (int *)malloc(n * sizeof(int));
+
   for (int i = 0; i < m; i++)
     a[i][0] = i * g;
   for (int j = 0; j < n; j++)
@@ -82,42 +73,79 @@ void similaridade(char *s, char *t, int m, int n) {
   for (int i = 1; i < m; i++) {
     for (int j = 1; j < n; j++) {
       p = par(s[i], t[j]);
-      a[i][j] =
-          max((a[i - 1][j] + g), (a[i - 1][j - 1] + p), (a[i][j - 1] + g));
+      a[i][j] = max((a[i - 1][j] + g), (a[i - 1][j - 1] + p), (a[i][j - 1] + g));
     }
   }
+
   print_matrix(s, t, m, n, a);
+
+  return a;
 }
-/*
-void alinhar(int i, int j, int len, int m, int n, int a[m][n], char *s, char *t)
-{ if(i == 0 && j ==0 ) len = 0; else if(i > 0 && a[i][j] == a[i-1][j]+g) {
-    alinhar(i-1, j, len, m, n, a, s, t);
-    len = len+1;
-    align_s[len] = s[i];
+
+int alinhar(int i, int j, int len, struct auxiliar aux) {
+  if (i == 0 && j == 0)
+    len = 0;
+  else if (i > 0 && aux.a[i][j] == aux.a[i - 1][j] + g) { // Seta vertical
+    len = alinhar(i - 1, j, len, aux);
+    len++;
+    align_s[len] = aux.s[i];
     align_t[len] = '-';
-  } else if((i>0 && j>0) && a[i][j] == a[i-1][j-1] + par(s[i], t[j])) {
-
+  } else if (i > 0 && j > 0 && aux.a[i][j] == aux.a[i - 1][j - 1] + par(aux.s[i], aux.t[j])) { // Seta diagonal 
+    len = alinhar(i - 1, j - 1, len, aux);
+    len++;
+    align_s[len] = aux.s[i];
+    align_t[len] = aux.t[j];
+  } else { // Seta horizontal
+    len = alinhar(i, j - 1, len, aux);
+    len++;
+    align_s[len] = '-';
+    align_t[len] = aux.t[j];
   }
+  return len;
 }
-*/
-int main(void) {
-  char s[k], t[k];
 
-  printf("---INSIRA SEQUÊNCIAS DE ATÉ 10 CARACTERES---\n");
-  printf("---COMECE AS SEQUÊNCIAS COM '-' OU OUTRO CARACTER PARA INDICAR "
-         "GAP---\n\n");
+void print_alignments(char *align, int len) {
+  printf("\n");
+  for (int i = 0; i <= len; i++)
+      printf("%c", align[i]);
+}
+
+int main(void) {
+  char s[k], t[k]; // Sequências de bases
+  int **a; // Matriz de similaridade
+  struct auxiliar aux;
+  int len = 0;
+
+  printf("---INSIRA SEQUÊNCIAS DE ATÉ %d CARACTERES---\n", k);
+  printf("---COMECE AS SEQUÊNCIAS COM '-' OU OUTRO CARACTER PARA INDICAR GAP---\n\n");
   printf("EXEMPLOS: -ACT E -AACT\n\n");
   printf("Insira a primeira sequência: ");
   scanf("%s", s);
   printf("\nInsira a segunda sequência: ");
   scanf("%s", t);
+  
+  int m = tam_seq(s); // Tamanho da primeira sequência
+  int n = tam_seq(t); // Tamanho da segunda sequência
 
-  int m = tam_seq(s);
-  int n = tam_seq(t);
-  if (m < n)
-    similaridade(s, t, m, n);
-  else
-    similaridade(t, s, n, m);
+  // O programa considera que s é maior que t
+  if(m>=n) {
+    strcpy(aux.s, s);
+    strcpy(aux.t, t);
+  } else {
+    strcpy(aux.s, t);
+    strcpy(aux.t, s);
+  }
+
+  aux.m = tam_seq(aux.s); // Tamanho da primeira sequência
+  aux.n = tam_seq(aux.t); // Tamanho da segunda sequência
+
+  // A função recebe a maior função como primeiro parâmetro, isto garante que a
+  // matriz seja impressa no formato correto
+  aux.a = similaridade(aux.s, aux.t, aux.m, aux.n);
+  len = alinhar(aux.m-1, aux.n-1, len, aux);
+
+  print_alignments(align_s, len);
+  print_alignments(align_t, len);
 
   return 0;
 }
