@@ -1,0 +1,16 @@
+Esta pasta contém os algoritmos de comaparação de duas sequências do capítulo 3.
+
+Explicando o que é cada arquivo:
+global.c --> contém as funções referentes à comparação global
+local.c --> contém as funções referentes à comparação local
+all.c --> contém funções, estruturas e variáveis usadas por mais de um tipo de comparação
+
+global.h, local.h, all.h --> headers dos arquivos acima
+
+similaridade.c --> contém a função principal, define qual tipo de comparação será executado
+
+Para compilar o código corretamente:
+gcc -o similaridade.c all.c global.c local.c
+
+Isto irá gerar o executável "similaridade" que deve ser rodado assim:
+./similaridade
