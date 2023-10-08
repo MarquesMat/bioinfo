@@ -10,7 +10,7 @@ global.h, local.h, all.h --> headers dos arquivos acima
 similaridade.c --> contém a função principal, define qual tipo de comparação será executado
 
 Para compilar o código corretamente:
-gcc -o similaridade.c all.c global.c local.c
+gcc -o similaridade.c all.c global.c local.c semiglobal.c
 
 Isto irá gerar o executável "similaridade" que deve ser rodado assim:
 ./similaridade
