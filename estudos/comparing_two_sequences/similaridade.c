@@ -3,13 +3,8 @@
 // Bibliotecas criadas
 #include "global.h"
 #include "local.h"
+#include "semiglobal.h"
 #include "all.h"
-
-void print_alignments(char *align, int len) {
-  printf("\n");
-  for (int i = 0; i <= len; i++)
-      printf("%c", align[i]);
-}
 
 int main(void) {
   char s[k], t[k]; // Sequências de bases
@@ -40,12 +35,26 @@ int main(void) {
   aux.m = tam_seq(aux.s); // Tamanho da primeira sequência
   aux.n = tam_seq(aux.t); // Tamanho da segunda sequência
 
-  // A função recebe a maior função como primeiro parâmetro, isto garante que a
-  // matriz seja impressa no formato correto
-  aux.a = similaridade(aux.s, aux.t, aux.m, aux.n);
-  printf("\n\n");
-  //aux.a = local_comparasion(aux.s, aux.t, aux.m, aux.n);
-  len = alinhar(aux.m-1, aux.n-1, len, aux);
+  switch (choose_comparation())
+  {
+  case 1: // Global
+    aux.a = similaridade(aux.s, aux.t, aux.m, aux.n); // A função recebe a maior sequência como primeiro parâmetro
+    len = alinhar(aux.m-1, aux.n-1, len, aux);
+    break;
+  case 2: // Local
+    aux.a = local_comparison(aux.s, aux.t, aux.m, aux.n); // A função recebe a maior sequência como primeiro parâmetro
+    len = alinhar_local(aux.m-1, aux.n-1, len, aux);
+    break;
+  case 3: // Semiglobal -CAGCACTTGGATTCTCGG  -CAGCGTGG
+    aux.a = semiglobal_comparison(aux.s, aux.t, aux.m, aux.n); // A função recebe a maior sequência como primeiro parâmetro
+    int ind_i = max_last_colunmn(aux.a, aux.m, aux.n);
+    len = alinhar_semiglobal(ind_i, aux.n-1, len, aux);
+    len = end_sequences(aux, len);
+    break;
+  default:
+    printf("---OPÇÃO INVÁLIDA---");
+    break;
+  }
 
   print_alignments(align_s, len);
   print_alignments(align_t, len);
